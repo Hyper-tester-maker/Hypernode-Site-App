@@ -2,6 +2,8 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
 import { Zap, Droplets, Banknote, ShoppingCart, ChevronDown } from 'lucide-react';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -100,16 +102,17 @@ const ConnectDeviceCard = () => {
 
 
 const App = () => {
-  const {
-    toast
-  } = useToast();
-  
-  const handleConnectWallet = () => {
-    toast({
-      title: 'Coming Soon! 🚀',
-      description: 'Wallet connectivity for network interaction will be implemented shortly.'
-    });
-  };
+  const { toast } = useToast();
+  const { publicKey, connected } = useWallet();
+
+  React.useEffect(() => {
+    if (connected && publicKey) {
+      toast({
+        title: 'Wallet Connected! ✅',
+        description: `Connected to ${publicKey.toBase58().slice(0, 4)}...${publicKey.toBase58().slice(-4)}`,
+      });
+    }
+  }, [connected, publicKey, toast]);
 
   const defiServices = [{
       icon: <Droplets size={24} />,
@@ -143,9 +146,17 @@ const App = () => {
                             <h1 className="text-4xl md:text-5xl font-bold mb-2 glow-text">HYPERNODE App</h1>
                             <p className="text-lg text-gray-400">Interact with the Network</p>
                         </div>
-                        <Button onClick={handleConnectWallet} className="mt-6 md:mt-0 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105">
-                            Connect Wallet
-                        </Button>
+                        <div className="mt-6 md:mt-0">
+                            <WalletMultiButton style={{
+                              background: 'linear-gradient(to right, #06b6d4, #2563eb)',
+                              border: 'none',
+                              fontWeight: 'bold',
+                              padding: '12px 24px',
+                              borderRadius: '8px',
+                              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                              transition: 'all 0.3s ease',
+                            }} />
+                        </div>
                     </motion.div>
 
                     <div className="space-y-12">

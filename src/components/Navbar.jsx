@@ -25,6 +25,7 @@ const Navbar = () => {
     { name: 'Community', path: '/community' },
     { name: 'App', path: '/app' },
     { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Validation', path: '/validation' },
     { name: 'Automation', path: '/automation' },
     { name: 'LLM Deploy', path: '/llm-deploy' },
     { name: 'x402', path: '/x402' },

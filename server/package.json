@@ -1,0 +1,19 @@
+{
+  "name": "hypernode-backend",
+  "version": "1.0.0",
+  "description": "Hypernode Backend API - Node Registry, Job Marketplace & Metrics",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "@solana/web3.js": "^1.91.4",
+    "uuid": "^9.0.1",
+    "compression": "^1.7.4"
+  }
+}

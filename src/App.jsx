@@ -14,6 +14,7 @@ import NetworkDashboard from '@/pages/NetworkDashboard';
 import LLMDeploy from '@/pages/LLMDeploy';
 import X402Module from '@/pages/X402Module';
 import AutomationEngine from '@/pages/AutomationEngine';
+import Validation from '@/pages/Validation';
 import WalletContextProvider from '@/components/WalletProvider';
 import Chatbot from '@/components/Chatbot';
 
@@ -41,6 +42,8 @@ function AppWrapper() {
           <Route path="/llm-deploy" element={<LLMDeploy />} />
           <Route path="/x402" element={<X402Module />} />
           <Route path="/automation" element={<AutomationEngine />} />
+          <Route path="/validation" element={<Validation />} />
+          <Route path="/metrics" element={<Validation />} />
         </Routes>
         <Footer />
         <Chatbot />

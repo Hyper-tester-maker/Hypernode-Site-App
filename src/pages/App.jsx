@@ -144,41 +144,61 @@ const App = () => {
   const [initialFetchDone, setInitialFetchDone] = useState(false);
 
   const getBalances = useCallback(async () => {
-    if (!connected || !publicKey) return;
+    if (!connected || !publicKey) {
+      console.log('Not connected or no publicKey');
+      return;
+    }
 
     setLoading(true);
-    toast({
-      title: 'Updating Balances...',
-      description: 'Fetching data from Solana blockchain.',
-    });
+    console.log('Fetching balances for:', publicKey.toBase58());
 
     try {
-      const solBalancePromise = connection.getBalance(publicKey);
-      const hypernodeToken = new PublicKey(TOKEN_ADDRESSES.HYPERNODE);
-      const tokenAccountsPromise = connection.getParsedTokenAccountsByOwner(publicKey, { mint: hypernodeToken });
+      // Fetch SOL balance
+      console.log('Fetching SOL balance...');
+      const solBalance = await connection.getBalance(publicKey);
+      console.log('SOL balance (lamports):', solBalance);
+      const solBalanceInSol = solBalance / LAMPORTS_PER_SOL;
+      console.log('SOL balance:', solBalanceInSol);
 
-      const [solBalance, tokenAccounts] = await Promise.all([solBalancePromise, tokenAccountsPromise]);
-
+      // Fetch HYPERNODE token balance
+      console.log('Fetching HYPERNODE token balance...');
       let hypernodeBalance = 0;
-      if (tokenAccounts.value.length > 0) {
-        hypernodeBalance = tokenAccounts.value[0]?.account.data.parsed.info.tokenAmount.uiAmount || 0;
+      try {
+        const hypernodeToken = new PublicKey(TOKEN_ADDRESSES.HYPERNODE);
+        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, { mint: hypernodeToken });
+        console.log('HYPERNODE token accounts found:', tokenAccounts.value.length);
+
+        if (tokenAccounts.value.length > 0) {
+          hypernodeBalance = tokenAccounts.value[0]?.account.data.parsed.info.tokenAmount.uiAmount || 0;
+          console.log('HYPERNODE balance:', hypernodeBalance);
+        } else {
+          console.log('No HYPERNODE token account found for this wallet');
+        }
+      } catch (tokenError) {
+        console.warn('Error fetching HYPERNODE token (wallet may not have this token):', tokenError.message);
+        // Don't throw - just keep hypernode balance at 0
       }
 
       setBalances({
-        sol: solBalance / LAMPORTS_PER_SOL,
+        sol: solBalanceInSol,
         hypernode: hypernodeBalance,
       });
 
       toast({
         title: 'Balances Updated! ✅',
-        description: 'Your balances have been synced with the blockchain.',
+        description: `SOL: ${solBalanceInSol.toFixed(4)} | HYPERNODE: ${hypernodeBalance.toFixed(4)}`,
       });
     } catch (error) {
       console.error("Error fetching balances:", error);
-      setBalances({ sol: 0, hypernode: 0 });
+      console.error("Error details:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+
       toast({
         title: 'Error Fetching Balances',
-        description: 'Could not fetch your balances. Please try again.',
+        description: error.message || 'Could not fetch your balances. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -188,15 +208,22 @@ const App = () => {
 
   useEffect(() => {
     if (connected && publicKey && !initialFetchDone) {
+      console.log('Wallet connected, fetching balances...');
       toast({
         title: 'Wallet Connected! ✅',
         description: `Connected to ${publicKey.toBase58().slice(0, 4)}...${publicKey.toBase58().slice(-4)}`,
       });
-      getBalances();
+
+      // Small delay to ensure connection is stable
+      setTimeout(() => {
+        getBalances();
+      }, 500);
+
       setInitialFetchDone(true);
     }
 
     if (!connected) {
+      console.log('Wallet disconnected');
       setBalances({ sol: 0, hypernode: 0 });
       setInitialFetchDone(false);
     }

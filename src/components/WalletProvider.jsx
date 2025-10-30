@@ -14,7 +14,19 @@ const WalletContextProvider = ({ children }) => {
 
   const endpoint = useMemo(() => {
     const helius = import.meta?.env?.VITE_HELIUS_RPC;
-    return helius && helius.length > 0 ? helius : clusterApiUrl(network);
+
+    // Try custom RPC first, then fallback to public endpoints
+    if (helius && helius.length > 0) {
+      console.log('Using custom Helius RPC endpoint');
+      return helius;
+    }
+
+    // Use public RPC (note: these have rate limits)
+    const publicEndpoint = clusterApiUrl(network);
+    console.log('Using public Solana RPC endpoint:', publicEndpoint);
+    console.log('⚠️ Warning: Public RPC has rate limits. For production, use a custom RPC provider.');
+
+    return publicEndpoint;
   }, [network]);
 
   const wallets = useMemo(

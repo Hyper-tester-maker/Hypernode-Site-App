@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
-import { Zap, Droplets, Banknote, ShoppingCart, ChevronDown } from 'lucide-react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { Zap, Droplets, Banknote, ShoppingCart, ChevronDown, Loader, RefreshCw } from 'lucide-react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +13,39 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+const TOKEN_ADDRESSES = {
+  HYPERNODE: '92s9qna3djkMncZzkacyNQ38UKnNXZFh4Jgqe3Cmpump',
+  SOLANA: 'So11111111111111111111111111111111111111111'
+};
+
+const TokenBalanceCard = ({ name, symbol, balance, icon, loading }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+    className="bg-gradient-to-br from-cyan-500/10 to-blue-600/10 border border-cyan-500/30 rounded-xl p-6 flex items-center justify-between hover-glow"
+  >
+    <div className="flex items-center space-x-4">
+      <div className="w-12 h-12 flex items-center justify-center bg-gray-800 rounded-full">
+        {icon}
+      </div>
+      <div>
+        <p className="text-xl font-bold text-white">{name}</p>
+        <p className="text-sm text-gray-400">{symbol}</p>
+      </div>
+    </div>
+    <div className="text-right">
+      {loading ? (
+        <Loader className="animate-spin text-cyan-400" size={24} />
+      ) : (
+        <p className="text-2xl font-bold text-cyan-400">
+          {balance.toLocaleString(undefined, { maximumFractionDigits: 4 })}
+        </p>
+      )}
+    </div>
+  </motion.div>
+);
 
 const PlaceholderCard = ({
   icon,
@@ -103,16 +137,70 @@ const ConnectDeviceCard = () => {
 
 const App = () => {
   const { toast } = useToast();
+  const { connection } = useConnection();
   const { publicKey, connected } = useWallet();
+  const [balances, setBalances] = useState({ sol: 0, hypernode: 0 });
+  const [loading, setLoading] = useState(false);
+  const [initialFetchDone, setInitialFetchDone] = useState(false);
 
-  React.useEffect(() => {
-    if (connected && publicKey) {
+  const getBalances = useCallback(async () => {
+    if (!connected || !publicKey) return;
+
+    setLoading(true);
+    toast({
+      title: 'Updating Balances...',
+      description: 'Fetching data from Solana blockchain.',
+    });
+
+    try {
+      const solBalancePromise = connection.getBalance(publicKey);
+      const hypernodeToken = new PublicKey(TOKEN_ADDRESSES.HYPERNODE);
+      const tokenAccountsPromise = connection.getParsedTokenAccountsByOwner(publicKey, { mint: hypernodeToken });
+
+      const [solBalance, tokenAccounts] = await Promise.all([solBalancePromise, tokenAccountsPromise]);
+
+      let hypernodeBalance = 0;
+      if (tokenAccounts.value.length > 0) {
+        hypernodeBalance = tokenAccounts.value[0]?.account.data.parsed.info.tokenAmount.uiAmount || 0;
+      }
+
+      setBalances({
+        sol: solBalance / LAMPORTS_PER_SOL,
+        hypernode: hypernodeBalance,
+      });
+
+      toast({
+        title: 'Balances Updated! ✅',
+        description: 'Your balances have been synced with the blockchain.',
+      });
+    } catch (error) {
+      console.error("Error fetching balances:", error);
+      setBalances({ sol: 0, hypernode: 0 });
+      toast({
+        title: 'Error Fetching Balances',
+        description: 'Could not fetch your balances. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [connected, publicKey, connection, toast]);
+
+  useEffect(() => {
+    if (connected && publicKey && !initialFetchDone) {
       toast({
         title: 'Wallet Connected! ✅',
         description: `Connected to ${publicKey.toBase58().slice(0, 4)}...${publicKey.toBase58().slice(-4)}`,
       });
+      getBalances();
+      setInitialFetchDone(true);
     }
-  }, [connected, publicKey, toast]);
+
+    if (!connected) {
+      setBalances({ sol: 0, hypernode: 0 });
+      setInitialFetchDone(false);
+    }
+  }, [connected, publicKey, getBalances, initialFetchDone, toast]);
 
   const defiServices = [{
       icon: <Droplets size={24} />,
@@ -158,6 +246,57 @@ const App = () => {
                             }} />
                         </div>
                     </motion.div>
+
+                    {connected && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="mb-12"
+                      >
+                        <div className="flex items-center justify-between mb-6">
+                          <h2 className="text-3xl font-bold gradient-text">Your Wallet Balances</h2>
+                          <Button
+                            onClick={getBalances}
+                            variant="ghost"
+                            size="sm"
+                            className="text-cyan-400 hover:bg-cyan-500/10"
+                            disabled={loading}
+                          >
+                            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                            <span className="ml-2">Refresh</span>
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <TokenBalanceCard
+                            name="HYPERNODE"
+                            symbol="$HYPER"
+                            balance={balances.hypernode}
+                            loading={loading && !balances.hypernode}
+                            icon={
+                              <img
+                                src="https://horizons-cdn.hostinger.com/1e54f271-6c35-4f84-9c56-0768238922fb/27dd0eef97ff29791c8c57e6b192dd95.png"
+                                alt="HYPERNODE logo"
+                                className="w-6 h-6"
+                              />
+                            }
+                          />
+                          <TokenBalanceCard
+                            name="Solana"
+                            symbol="SOL"
+                            balance={balances.sol}
+                            loading={loading && !balances.sol}
+                            icon={
+                              <img
+                                alt="Solana coin symbol"
+                                className="w-6 h-6"
+                                src="https://horizons-cdn.hostinger.com/1e54f271-6c35-4f84-9c56-0768238922fb/687b78b67b8f163af9d217c516191166.webp"
+                              />
+                            }
+                          />
+                        </div>
+                      </motion.div>
+                    )}
 
                     <div className="space-y-12">
                         <div>

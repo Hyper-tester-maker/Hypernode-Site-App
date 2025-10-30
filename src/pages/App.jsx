@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
-import { Zap, Droplets, Banknote, ShoppingCart, ChevronDown, Cpu } from 'lucide-react';
+import { Zap, Droplets, Banknote, ShoppingCart, ChevronDown } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,9 +14,7 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useWallet } from '@solana/wallet-adapter-react';
 import BalanceCard from '@/components/BalanceCard';
 import PointsCard from '@/components/PointsCard';
-import TokenGenerator from '@/components/TokenGenerator';
-import NodeTable from '@/components/NodeTable';
-import JobTable from '@/components/JobTable';
+import GpuHostsPreview from '@/components/GpuHostsPreview';
 
 const PlaceholderCard = ({
   icon,
@@ -172,8 +170,8 @@ const App = () => {
                                 <div className="lg:col-span-1">
                                     <ConnectDeviceCard />
                                 </div>
-                                <div className="lg:col-span-2 flex items-center justify-center bg-black/20 backdrop-blur-sm border border-cyan-500/30 rounded-2xl p-6 shadow-lg hover-glow">
-                                    <p className="text-center text-gray-400">More ways to interact with the network coming soon...</p>
+                                <div className="lg:col-span-2">
+                                    <GpuHostsPreview />
                                 </div>
                             </div>
                         </div>
@@ -184,70 +182,6 @@ const App = () => {
                                 {defiServices.map((service, index) => <PlaceholderCard key={index} {...service} icon={React.cloneElement(service.icon, {
                 className: 'text-green-400'
               })} />)}
-                            </div>
-                        </div>
-
-                        <div>
-                            <div className="flex items-center mb-6">
-                                <Cpu className="text-cyan-400 mr-3 h-7 w-7" />
-                                <h2 className="text-2xl font-semibold text-cyan-400 border-b-2 border-cyan-500/30 pb-2 flex-1">
-                                    GPU Hosts <span className="text-sm text-gray-500 ml-2">(Beta)</span>
-                                </h2>
-                            </div>
-
-                            <div className="space-y-8">
-                                <TokenGenerator />
-
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <NodeTable />
-                                    <JobTable />
-                                </div>
-
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.2 }}
-                                    className="bg-black/20 backdrop-blur-sm border border-cyan-500/30 rounded-2xl p-6"
-                                >
-                                    <h3 className="text-xl font-semibold text-cyan-400 mb-4">How to run the host</h3>
-
-                                    <div className="space-y-4 text-gray-300">
-                                        <div>
-                                            <h4 className="font-semibold text-gray-200 mb-2">Prerequisites</h4>
-                                            <ul className="list-disc list-inside space-y-1 text-sm text-gray-400">
-                                                <li>Ubuntu 22.04 or compatible Linux distribution</li>
-                                                <li>Docker installed and configured</li>
-                                                <li>NVIDIA Container Toolkit (for GPU support)</li>
-                                                <li>NVIDIA GPU with recent drivers (recommended: RTX 3000 series or newer)</li>
-                                            </ul>
-                                        </div>
-
-                                        <div>
-                                            <h4 className="font-semibold text-gray-200 mb-2">Steps</h4>
-                                            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-400">
-                                                <li>Generate a node token using the button above</li>
-                                                <li>Copy and run the Docker command on your GPU host machine</li>
-                                                <li>Return to this page to see your host online in the "My GPU Nodes" table</li>
-                                                <li>Your node will automatically receive jobs from the network</li>
-                                            </ol>
-                                        </div>
-
-                                        <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-4 mt-4">
-                                            <p className="text-sm text-cyan-200">
-                                                <strong>Need help?</strong> Join our{' '}
-                                                <a
-                                                    href="https://discord.gg/hypernode"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="underline hover:text-cyan-300"
-                                                >
-                                                    Discord community
-                                                </a>
-                                                {' '}for support and troubleshooting.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </motion.div>
                             </div>
                         </div>
                     </div>

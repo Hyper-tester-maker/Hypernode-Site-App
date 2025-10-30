@@ -1,8 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import nodesRouter from './routes/nodes.js';
-import jobsRouter from './routes/jobs.js';
+import gpuRouter from './routes/gpu.js';
 
 dotenv.config();
 
@@ -22,8 +21,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-app.use('/api/nodes', nodesRouter);
-app.use('/api/jobs', jobsRouter);
+app.use('/api/gpu', gpuRouter);
 
 // 404 handler
 app.use((req, res) => {

@@ -7,26 +7,21 @@ Official website and application for HYPERNODE - A decentralized GPU compute net
 ```
 ├── src/                    # Frontend source code (Vite + React)
 │   ├── pages/             # Page components
-│   │   └── App.jsx        # Main app page with GPU Hosts module
+│   │   └── App.jsx        # Main app page with GPU registration
 │   ├── components/        # Reusable components
-│   │   ├── TokenGenerator.jsx
-│   │   ├── NodeTable.jsx
-│   │   ├── JobTable.jsx
+│   │   ├── GpuHostsPreview.jsx  # GPU registration component
 │   │   └── ui/            # UI components (Radix UI)
 │   └── main.jsx           # Entry point
 │
-├── backend/               # Backend API server (Express + WebSocket)
+├── backend/               # Backend API server (Express)
 │   ├── server.js         # HTTP API server
-│   ├── ws-server.js      # WebSocket server for nodes
-│   ├── routes/           # API routes
-│   └── store.js          # In-memory storage
+│   ├── routes/
+│   │   └── gpu.js       # GPU registration endpoints
 │
-├── agents/               # Host agent implementations
-│   └── python-host/     # Python agent for GPU hosts
-│       ├── agent.py     # Main agent script
-│       └── Dockerfile   # Docker image
+├── agents/               # GPU registration scripts
+│   └── gpu_probe.py     # Python script for GPU registration
 │
-└── GPU_HOSTS_SETUP.md   # Detailed setup guide
+└── GPU_REGISTRATION.md  # GPU registration guide
 ```
 
 ## Features
@@ -41,18 +36,17 @@ Official website and application for HYPERNODE - A decentralized GPU compute net
 ### /app - Interactive Application
 - **Wallet Integration**: Connect Solana wallets (Phantom, Solflare, Backpack)
 - **Balance Display**: View SOL and HYPER token balances
-- **GPU Hosts Module** (NEW):
-  - Generate node registration tokens
-  - Connect GPU hosts to the network
-  - Monitor node status in real-time
-  - View completed jobs and earnings
-  - Earn HYPER tokens for compute work
+- **GPU Hosts (Preview)** (NEW):
+  - Register your GPU-enabled machines
+  - View registered GPUs in real-time
+  - Simple telemetry and monitoring
+  - Community visibility of GPU network
 
-### GPU Hosts System
-- Decentralized GPU compute orchestration
-- WebSocket-based node communication
-- Real-time job dispatch and monitoring
-- Earnings tracking for node operators
+### GPU Registration System
+- Lightweight GPU registration via Python script
+- Real-time table showing registered GPUs
+- Telemetry only (no job execution yet)
+- Foundation for future compute marketplace
 
 ## Quick Start
 
@@ -82,25 +76,17 @@ npm install
 # Copy environment variables
 cp .env.example .env
 
-# Terminal 1: Start HTTP API server
+# Start API server
 node server.js
-
-# Terminal 2: Start WebSocket server
-node ws-server.js
 ```
 
-### Running a GPU Host Agent
+### Registering a GPU
 
 ```bash
-cd agents/python-host
+# From the /app page, copy the registration script and command
+# Or use the standalone script:
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Run agent
-python3 agent.py \
-  --endpoint ws://localhost:3002 \
-  --token YOUR_TOKEN_FROM_APP
+python3 agents/gpu_probe.py --wallet YOUR_WALLET_ADDRESS
 ```
 
 ## Environment Variables
@@ -114,7 +100,6 @@ VITE_NODE_WS_ENDPOINT=ws://localhost:3002
 ### Backend (backend/.env)
 ```env
 PORT=3001
-WS_PORT=3002
 CORS_ORIGIN=http://localhost:5173
 ```
 
@@ -171,30 +156,26 @@ See [GPU_HOSTS_SETUP.md](./GPU_HOSTS_SETUP.md) for detailed deployment instructi
 
 ## Documentation
 
-- [GPU Hosts Setup Guide](./GPU_HOSTS_SETUP.md) - Comprehensive setup and deployment guide
-- [Backend API Documentation](./backend/README.md) - API endpoints and WebSocket protocol
-- [Python Agent Documentation](./agents/python-host/README.md) - Agent usage and troubleshooting
+- [GPU Registration Guide](./GPU_REGISTRATION.md) - How to register your GPU
+- [Backend API Documentation](./backend/README.md) - API endpoints reference
 
 ## Architecture
 
-### GPU Hosts Flow
+### GPU Registration Flow
 
-1. **User generates token**: User connects wallet at `/app`, clicks "Generate node token"
-2. **Backend issues token**: POST `/api/nodes/issue-token` creates a unique UUID token
-3. **User runs agent**: User copies command and runs it on their GPU machine
-4. **Agent registers**: Agent connects via WebSocket, sends token and host info
-5. **Backend validates**: Backend validates token, marks as used, creates node record
-6. **Node online**: Node appears in "My GPU Nodes" table, starts receiving jobs
-7. **Job execution**: Backend dispatches jobs, agent executes and reports results
-8. **Earnings**: Node earns HYPER tokens for completed jobs
+1. **User connects wallet**: User visits `/app` and connects Solana wallet
+2. **Copy script**: User copies Python registration script from the page
+3. **Run script**: User runs `python3 gpu_probe.py --wallet <address>` on GPU machine
+4. **Script collects data**: Script detects GPUs using nvidia-smi
+5. **Register with API**: Script POSTs to `/api/gpu/register`
+6. **Backend stores**: Backend stores GPU data in memory (wallet + hostname + GPUs)
+7. **Table updates**: Frontend polls `/api/gpu/hosts?wallet=<address>` every 10s
+8. **GPU visible**: User sees their GPU in the "Your Registered GPUs" table
 
-### WebSocket Protocol
+### API Endpoints
 
-- **register**: Agent → Server (with token)
-- **registered**: Server → Agent (with nodeId)
-- **heartbeat**: Agent → Server (every 15s)
-- **job**: Server → Agent (job to execute)
-- **job_result**: Agent → Server (execution result)
+- **POST /api/gpu/register**: Register a GPU host with telemetry data
+- **GET /api/gpu/hosts?wallet=<address>**: List all GPUs for a wallet
 
 ## Development
 
@@ -235,16 +216,16 @@ npm start
 
 ## Production Checklist
 
-- [ ] Replace in-memory storage with database
-- [ ] Add authentication for admin endpoints
-- [ ] Implement rate limiting
+- [ ] Replace in-memory storage with database (PostgreSQL/Redis)
+- [ ] Add rate limiting to prevent abuse
 - [ ] Add proper logging and monitoring
-- [ ] Use WSS (secure WebSocket) for production
-- [ ] Sandbox job execution (Docker containers)
-- [ ] Add signature verification for agents
-- [ ] Implement job queue system
-- [ ] Add blockchain integration for payments
+- [ ] Implement GPU data persistence
+- [ ] Add wallet signature verification
 - [ ] Set up CI/CD pipeline
+- [ ] Add analytics and metrics
+- [ ] Implement job execution system (Phase 2)
+- [ ] Add blockchain integration for payments (Phase 2)
+- [ ] Build compute marketplace (Phase 3)
 
 ## License
 

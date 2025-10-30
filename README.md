@@ -72,11 +72,10 @@ Hypernode-Site-App/
 │   │   ├── Navbar.jsx
 │   │   └── ui/                 # Reusable UI components
 │   ├── pages/
-│   │   ├── Home.jsx
-│   │   ├── App.jsx             # Main app (node registration)
-│   │   ├── Validation.jsx      # Public validation & metrics
-│   │   ├── NetworkDashboard.jsx
-│   │   └── ...
+│   │   ├── Home.jsx            # Landing page
+│   │   ├── App.jsx             # Main app (node registration & management)
+│   │   ├── NetworkDashboard.jsx # Network statistics & monitoring
+│   │   └── Validation.jsx      # Public validation & on-chain metrics
 │   ├── services/
 │   │   └── api.js              # API service wrapper
 │   └── main.jsx
@@ -180,6 +179,49 @@ The app will be available at:
 - [ ] Bridge to Base blockchain
 - [ ] Advanced reputation system
 - [ ] Governance features
+
+---
+
+## 📄 Pages
+
+The application is focused on 3 core pages:
+
+### 🏠 **Home** (`/`)
+**Landing Page**
+- Clean, modern introduction to Hypernode
+- Quick links to App, Dashboard, and Validation
+- Network stats overview
+- Call-to-action to connect wallet and start
+
+### ⚡ **App** (`/app`)
+**GPU Node Management**
+- Connect Solana wallet (Phantom, Solflare, Backpack)
+- View SOL and HYPER token balances
+- Register new GPU nodes with specs:
+  - GPU model (RTX 4090, 3080, etc.)
+  - VRAM amount
+  - Capabilities (inference, training, render)
+- View all your registered nodes
+- Monitor node stats (jobs completed, earnings)
+- Remove nodes
+
+### 📊 **Dashboard** (`/dashboard`)
+**Network Monitoring**
+- Real-time network statistics
+- Active nodes visualization
+- GPU distribution map
+- Compute activity tracking
+- Network health metrics
+
+### 🛡️ **Validation** (`/validation` or `/metrics`)
+**Public Transparency & Verification**
+- Total active nodes
+- Jobs completed on network
+- HYPER tokens paid
+- On-chain receipts (blockchain verification)
+- Smart contract program IDs
+- Links to Solana explorer (Solscan)
+- Public auditing interface
 
 ---
 

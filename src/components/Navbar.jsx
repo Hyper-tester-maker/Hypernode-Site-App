@@ -18,18 +18,9 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
-    { name: 'Technology', path: '/technology' },
-    { name: 'Economy', path: '/economy' },
-    { name: 'Developers', path: '/developers' },
-    { name: 'Community', path: '/community' },
     { name: 'App', path: '/app' },
     { name: 'Dashboard', path: '/dashboard' },
     { name: 'Validation', path: '/validation' },
-    { name: 'Automation', path: '/automation' },
-    { name: 'LLM Deploy', path: '/llm-deploy' },
-    { name: 'x402', path: '/x402' },
-    { name: 'Contact', path: '/contact' },
   ];
 
   return (
